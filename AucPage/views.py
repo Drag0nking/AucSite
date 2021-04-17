@@ -39,6 +39,7 @@ def handleEnterForm(request):
             error.append('Invalid User or Passcode!')
         hours=int(product_obj.Auction_pref_time.strftime('%H'))
         minutes=int(product_obj.Auction_pref_time.strftime('%M'))
+        
         seconds=int(product_obj.Auction_pref_time.strftime('%S'))
         time_check1=time.replace(hour=hours, minute=minutes, second=seconds,microsecond=0)
         time_check2=time.replace(hour=hours, minute=(minutes+10), second=seconds,microsecond=0)
