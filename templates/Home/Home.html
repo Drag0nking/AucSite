@@ -75,9 +75,51 @@
 			border-collapse: collapse;
 		}
 </style>
+
+
+<center>
+    <font color="YELLOW" size="16">Already Registered Auctions</font>
+</center>
+</br>
+<table width=100% bgcolor="white">
+    <thead>
+        <tr>
+            <td>Product Images</td>
+            <td></td>
+            <td>Name of Product</td>
+            <td>Details</td>
+            <td>Status</td>
+            <td>Code</td>
+        </tr>
+    </thead>
+    <tbody>
+    {% for p in regprod %}
+        <tr>
+            <td><img src="{{ p.Product_img.url }}" height="225" width="225"></td>
+            <td>
+                <div class="vl"></div>
+            </td>
+            <td>Owner: {{p.Product_owner}}<br>Product: {{ p.Product_name }}</td>
+            <td>{{ p.Product_desc }}</td>
+            <td>{{ p.Auction_pref_time }}<br><br>{{ p.Auction_pref_date }}</span></td>
+            <td>
+            {%for r in regUser%}
+            {%ifequal p.id r.Product_ID%}
+            <strong>{{r.PassCode}}</strong>
+            {%endifequal%}
+            {%endfor%}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<br>
+
 <center>
     <font color="YELLOW" size="16">TODAY AUCTIONS</font>
 </center>
+</br>
 <table width=100% bgcolor="white">
     <thead>
         <tr>
@@ -104,7 +146,7 @@
     {% endfor %}
     </tbody>
 </table>
-</font>
+
 <br>
 <center>
     <font color="Yellow" size="16">UPCOMING AUCTIONS </font>
@@ -136,7 +178,7 @@
     {% endfor %}
     </tbody>
 </table>
-</font>
+
 <center><br>
     <!--<font color="black" size="20">To Check Out More Auctions &nbsp;&nbsp;</font><br>
     <button type="button" class="button button1">Click Me!</button>-->

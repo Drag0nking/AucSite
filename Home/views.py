@@ -33,12 +33,17 @@ def Home(request):
     p = Product.objects.all()
     todayAuc=[]
     upcomingAuc=[]
+    regUser=[]
+    regprod=[]
     #for i in p:
         #if i.Auction_pref_date<today:
             #i.delete()
     for i in p:
         try:
             already=Registered_Users.objects.get(User_Name=request.user.username,Product_ID=i.id)
+            if i.AuctionEnded=="No":
+                regUser.append(already)
+                regprod.append(i)
         except:
             if i.AuctionEnded=="No":
                 if request.user.username!=i.Product_owner:
@@ -46,7 +51,8 @@ def Home(request):
                         todayAuc.append(i)
                     if i.Auction_pref_date>today:
                         upcomingAuc.append(i)
-    return render(request, 'Home/Home.html', {'todayAuc':todayAuc, 'upcomingAuc':upcomingAuc})
+    
+    return render(request, 'Home/Home.html', {'todayAuc':todayAuc, 'upcomingAuc':upcomingAuc,'regUser':regUser,'regprod':regprod})
 
 @login_required(login_url="/Login", redirect_field_name="Home")
 def Auc_Page(request):
@@ -74,12 +80,12 @@ def handleRegisterForm(request):
         reg_obj = Registered_Users(User_Name= aucRegUName, User_Email= aucRegEmail, Product_Name= aucRegProdName, Product_Owner= aucRegProdOwnerName, Auction_date= prod_obj.Auction_pref_date, Auction_time= prod_obj.Auction_pref_time,PassCode=prod_obj.Auction_Passcode, Product_ID=prod_obj.id, Initial_Bid_Amt=prod_obj.Starting_Bid)
         reg_obj.save()
         messages.success(request, 'Your pre-Registration has been Successfully Done!\nWe have sent you a mail regarding Auction details.')
-        subject="AucOn"
-        messaging = render_to_string('Home/preRegisterEmail.html',{'Client':client_obj, 'Product':prod_obj})
-        from_email=settings.EMAIL_HOST_USER
-        email_to_send=EmailMessage(subject=subject, body=messaging, from_email=from_email, to=[client_obj.Email])
-        email_to_send.content_subtype = "html"
-        email_to_send.send(fail_silently=False)
+        # subject="AucOn"
+        # messaging = render_to_string('Home/preRegisterEmail.html',{'Client':client_obj, 'Product':prod_obj})
+        # from_email=settings.EMAIL_HOST_USER
+        # email_to_send=EmailMessage(subject=subject, body=messaging, from_email=from_email, to=[client_obj.Email])
+        # email_to_send.content_subtype = "html"
+        # email_to_send.send(fail_silently=False)
         return redirect('Home')
     return redirect('Home')
 
@@ -193,12 +199,12 @@ def handleSignup(request):
         client_obj.Work_desc = Work_desc
         client_obj.save()
         messages.success(request, 'Your Account has been Successfully Created!\nWe have sent you a mail.')
-        subject="AucOn"
-        messaging = render_to_string('Home/Signup_Email.html',{'USER':Uname})
-        from_email=settings.EMAIL_HOST_USER
-        email_to_send=EmailMessage(subject=subject, body=messaging, from_email=from_email, to=[Email])
-        email_to_send.content_subtype = "html"
-        email_to_send.send(fail_silently=False)
+        # subject="AucOn"
+        # messaging = render_to_string('Home/Signup_Email.html',{'USER':Uname})
+        # from_email=settings.EMAIL_HOST_USER
+        # email_to_send=EmailMessage(subject=subject, body=messaging, from_email=from_email, to=[Email])
+        # email_to_send.content_subtype = "html"
+        # email_to_send.send(fail_silently=False)
         return redirect('/Login')
     else:
         messages.error(request, 'Details not provided as required!\nPlease fill the form again.')
@@ -317,12 +323,12 @@ def handleContactUs(request):
         #obj1=User.objects.get(email=email_addr)
         #USER=obj1.username
         USER = Full_name + ' ' + Last_name
-        subject="AucOn"
-        messaging = render_to_string('Home/Email_Cont_us.html',{'USER':USER})
-        from_email=settings.EMAIL_HOST_USER
-        email_to_send=EmailMessage(subject=subject, body=messaging, from_email=from_email, to=[email_addr])
-        email_to_send.content_subtype = "html"
-        email_to_send.send(fail_silently=False)
+        # subject="AucOn"
+        # messaging = render_to_string('Home/Email_Cont_us.html',{'USER':USER})
+        # from_email=settings.EMAIL_HOST_USER
+        # email_to_send=EmailMessage(subject=subject, body=messaging, from_email=from_email, to=[email_addr])
+        # email_to_send.content_subtype = "html"
+        # email_to_send.send(fail_silently=False)
         messages.success(request, 'Response is Recorded.\nA mail regarding this has been sent to you.')
     return render(request, 'Home/Contact_us.html')
 
@@ -356,7 +362,7 @@ def index(request):
 def gen(camera):
     global b
     b=True
-    while b:
+    while True:
         frame = camera.get_frame()
         yield(b'--frame\r\n'
               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
@@ -459,6 +465,7 @@ class Hand_gesture():
             
         maxbid=Auction.objects.filter(ProductID=self.p_id).aggregate(Max('ClientInitialBid'))["ClientInitialBid__max"]
         userbid=Auction.objects.get(ProductID=self.p_id,ClientUsername=self.uname)
+        
         global count
         # define actions required
         if count_defects == 1:
@@ -477,9 +484,11 @@ class Hand_gesture():
             cv2.putText(img, "0 Fingers", (50, 50), \
                         cv2.FONT_HERSHEY_SIMPLEX, 2, 2)
             if count!=0:
-                    userbid.ClientInitialBid=maxbid+(maxbid*5*count)/100
-                    count=0
-                    userbid.save()    
+                userbid.ClientInitialBid=math.ceil(maxbid+(maxbid*5*count)/100)
+                userbid.save() 
+                print(userbid.ClientInitialBid)
+                count=0
+               
 
         # show appropriate images in windows
 
@@ -501,13 +510,13 @@ def endAuction(request,p_id):
     for i in u:
         i.Winner='Yes'
         i.save()
-        subject="AucOn"
-        c_email = Client.objects.get(Uname=i.ClientUsername)
-        messaging = render_to_string('Auction/EndAucPage.html',{'Client':client_obj,'Product':prod_obj,'Winner':u})
-        from_email=settings.EMAIL_HOST_USER
-        email_to_send=EmailMessage(subject=subject, body=messaging, from_email=from_email, to=[c_email.Email])
-        email_to_send.content_subtype = "html"
-        email_to_send.send(fail_silently=False)
+        # subject="AucOn"
+        # c_email = Client.objects.get(Uname=i.ClientUsername)
+        # messaging = render_to_string('Auction/EndAucPage.html',{'Client':client_obj,'Product':prod_obj,'Winner':u})
+        # from_email=settings.EMAIL_HOST_USER
+        # email_to_send=EmailMessage(subject=subject, body=messaging, from_email=from_email, to=[c_email.Email])
+        # email_to_send.content_subtype = "html"
+        # email_to_send.send(fail_silently=False)
         messages.success(request, 'Response is Recorded.\nA mail regarding this has been sent to you.')
     return redirect('Home')
 
