@@ -35,24 +35,24 @@ def handleEnterForm(request):
             error.append("User not Registered!")
         try:
             product_obj = Product.objects.get(id=reg_user_obj.Product_ID, Auction_Passcode=aucFormCode)
-            hours=int(product_obj.Auction_pref_time.strftime('%H'))
-            minutes=int(product_obj.Auction_pref_time.strftime('%M'))
+            # hours=int(product_obj.Auction_pref_time.strftime('%H'))
+            # minutes=int(product_obj.Auction_pref_time.strftime('%M'))
             
-            seconds=int(product_obj.Auction_pref_time.strftime('%S'))
-            time_check1=time.replace(hour=hours, minute=minutes, second=seconds,microsecond=0)
-            if minutes>49:
-                minutes=(minutes+10)%59
-                hours=(hours+1)%24
-                time_check2=time.replace(hour=hours, minute=minutes, second=seconds,microsecond=0)
-            else:
-                time_check2=time.replace(hour=hours, minute=minutes, second=seconds,microsecond=0)
+            # seconds=int(product_obj.Auction_pref_time.strftime('%S'))
+            # time_check1=time.replace(hour=hours, minute=minutes, second=seconds,microsecond=0)
+            # if minutes>49:
+            #     minutes=(minutes+10)%59
+            #     hours=(hours+1)%24
+            #     time_check2=time.replace(hour=hours, minute=minutes, second=seconds,microsecond=0)
+            # else:
+            #     time_check2=time.replace(hour=hours, minute=minutes, second=seconds,microsecond=0)
 
-            if(product_obj.Auction_pref_date!=today):
-                error.append("Auction for this product is not today! Check your email for auction details")
-            if(time<time_check1):#Auction ke phele enter nai hone ka check
-                error.append("Auction is not started yet! Check time for this auction on Mail.")
-            if(time>time_check2):#Auction ke baad enter nai hone ka check
-                error.append("Auction enter time is passed!")
+            # if(product_obj.Auction_pref_date!=today):
+            #     error.append("Auction for this product is not today! Check your email for auction details")
+            # if(time<time_check1):#Auction ke phele enter nai hone ka check
+            #     error.append("Auction is not started yet! Check time for this auction on Mail.")
+            # if(time>time_check2):#Auction ke baad enter nai hone ka check
+            #     error.append("Auction enter time is passed!")
             if(product_obj.AuctionEnded=='Yes'):
                 error.append("Auction has ended!")
         except:
